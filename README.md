@@ -1,0 +1,35 @@
+#netflix gpt
+
+-create react app 
+-configure tailwind
+-Header
+-Routing of App
+-Login form
+-Singup form
+- Form valiadation
+- Create Signup User Account
+- Implement Sign In user Api
+- Created Redux Store with userSlice
+- Implemented sign out
+- BugFix: sign up user displayName 
+-BugFix: if the user is not logged in redirect /Browse to /Login and vice versa
+- Unsubscribed  to the onAuthstatechaned callback
+- Add hardcoded values to the constants file
+- register tmdp api & create an app & get acess token
+- get  data from tmddb now playing api
+-(BONUS) Multi -language Feature in our App
+-Integrate our gpt api
+#features
+-Login/Sign up
+ - Sign In/Sign up Form
+ - redirect to Browse Page
+- Browse(after authentication)
+  -Header
+  - Main Movie
+    -Trailer in Background
+    -Title in Description
+    -Movie list
+      -MovieLists * n
+-Netflix GPT
+ -Search bar
+ -Movie suggestoin      
