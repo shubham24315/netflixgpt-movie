@@ -54,6 +54,7 @@ const GptMovieSuggesions = () => {
             <li key={movie.id} className="min-w-0">
               <MovieCart
                 variant="grid"
+                movieId={movie?.id}
                 posterPath={movie?.poster_path}
                 title={movie?.title || movie?.name}
               />
