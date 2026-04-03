@@ -1,7 +1,6 @@
-import React from "react";
+import React, { useRef, useState } from "react";
 import lang from "../utils/languageConstants";
 import { useSelector } from "react-redux";
-import { useRef } from "react";
 import openai from "../utils/openai";
 import { API_OPTIONS, TMDB_WATCH_REGION } from "../utils/constants";
 import { useDispatch } from "react-redux";
@@ -15,7 +14,7 @@ const GptSearchBar = () => {
   const dispatch = useDispatch();
   const langkey = useSelector((store) => store.config.lang);
   const searchText = useRef(null);
-  const showGptSearch = useSelector((store) => store.gpt.showGptSearch);
+  const [isSearching, setIsSearching] = useState(false);
   //movie search in tmdb
   const searchMoiveTMDB = async (movieName) => {
     const data = await fetch(
@@ -27,7 +26,9 @@ const GptSearchBar = () => {
     return json.results;
   };
   const handleGptSearchClick = async () => {
-    // console.log(searchText.current.value);
+    if (!searchText.current?.value?.trim() || isSearching) return;
+    setIsSearching(true);
+    try {
     const gptQuery =
       "Act as a Movie Recommendation system and suggest some movies for the query : " +
       searchText.current.value +
@@ -68,26 +69,32 @@ const GptSearchBar = () => {
         providerFacets,
       }),
     );
+    } finally {
+      setIsSearching(false);
+    }
   };
   return (
-    <div className="pt-[10%] flex justify-center">
+    <div className="flex justify-center px-4 pb-8 pt-[10%] sm:pt-[8%]">
       <form
-        form
-        className="w-1/2 bg-black grid grid-cols-12"
-        onSubmit={(e) => e.preventDefault()}
+        className="grid w-full max-w-3xl grid-cols-1 gap-3 rounded-2xl border border-white/10 bg-black/70 p-3 shadow-2xl backdrop-blur-xl sm:grid-cols-12 sm:gap-0 sm:p-2"
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleGptSearchClick();
+        }}
       >
         <input
           ref={searchText}
-          type="text"
-          className="p-4 m-4 col-span-9"
+          type="search"
+          disabled={isSearching}
+          className="col-span-1 rounded-lg border border-white/10 bg-white/5 px-4 py-3.5 text-white placeholder:text-neutral-500 transition-colors focus:border-violet-400/50 focus:outline-none focus:ring-2 focus:ring-violet-500/30 disabled:opacity-60 sm:col-span-9 sm:mx-2 sm:my-2 sm:border-transparent sm:bg-transparent sm:focus:border-white/20"
           placeholder={lang[langkey].gptSearchPlaceholder}
         />
-        {/* to make it dynamic you to give lang[langkey] */}
         <button
-          className="py-2 px-4 bg-red-400 text-white col-span-3 m-4"
-          onClick={handleGptSearchClick}
+          type="submit"
+          disabled={isSearching}
+          className="rounded-lg bg-violet-600 px-4 py-3.5 text-sm font-semibold text-white shadow-lg shadow-violet-900/35 transition-all duration-200 ease-out-expo hover:bg-violet-500 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-60 sm:col-span-3 sm:mx-2 sm:my-2"
         >
-          {lang[langkey].search}
+          {isSearching ? "…" : lang[langkey].search}
         </button>
       </form>
     </div>

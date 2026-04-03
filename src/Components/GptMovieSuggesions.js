@@ -18,7 +18,7 @@ const GptMovieSuggesions = () => {
   );
   if (!movieNames) return null;
   return (
-    <div className="p-4 m-4 bg-black text-white bg-opacity-90">
+    <div className="animate-fade-in mx-4 mb-8 rounded-2xl border border-white/10 bg-black/75 p-4 text-white shadow-2xl backdrop-blur-xl sm:mx-8 md:mx-auto md:max-w-[1600px] md:p-6">
       <ProviderTopFilters />
       {movieResults.map((movie, index) => (
         <MovieList

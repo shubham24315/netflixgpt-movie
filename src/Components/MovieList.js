@@ -1,23 +1,24 @@
 import React from 'react'
 import MovieCart from './MovieCart'
 
-const MovieList = ({title,movies}) => {
-    // console.log(movies,"movies")
-  return movies && (
-    <div className="px-6 ">
-        <h1 className="text-3xl py-4 text-white">{title}</h1>
-        <div className="flex 
-        overflow-x-hidden hover:overflow-x-scroll scrollbar-hide">
-            
-            <div className="flex">
-            {
-                movies?.map((movie)=>{
-                    return (<MovieCart key={movie?.id} posterPath={movie?.poster_path}/>)
-                })
-                }
-            </div>
+const MovieList = ({ title, movies }) => {
+  if (!movies?.length) return null
+
+  return (
+    <section className="py-2 md:py-4">
+        <h2 className="mb-3 px-1 text-lg font-semibold text-white sm:text-xl md:text-2xl">
+          {title}
+        </h2>
+        <div className="movie-row -mx-1 flex gap-3 overflow-x-auto px-1 pb-2 pt-1 snap-x snap-mandatory md:gap-4">
+            {movies.map((movie) => (
+              <MovieCart
+                key={movie?.id}
+                posterPath={movie?.poster_path}
+                title={movie?.title || movie?.name}
+              />
+            ))}
         </div>
-    </div>
+    </section>
   )
 }
 

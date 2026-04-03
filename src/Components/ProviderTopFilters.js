@@ -22,7 +22,7 @@ const ProviderTopFilters = () => {
           <button
             type="button"
             onClick={() => dispatch(clearGptProviderFilters())}
-            className="text-xs text-red-400 hover:underline shrink-0"
+            className="shrink-0 text-xs text-red-400 transition-colors hover:text-red-300 hover:underline"
           >
             Clear all
           </button>
@@ -36,10 +36,10 @@ const ProviderTopFilters = () => {
               key={f.provider_id}
               type="button"
               onClick={() => dispatch(toggleGptProviderFilter(f.provider_id))}
-              className={`flex items-center gap-2 shrink-0 rounded-full border px-3 py-1.5 text-sm transition-colors ${
+              className={`flex items-center gap-2 shrink-0 rounded-full border px-3 py-1.5 text-sm transition-all duration-200 ease-out active:scale-[0.97] ${
                 active
-                  ? "border-red-500 bg-red-950/50 text-white"
-                  : "border-gray-600 bg-gray-900/80 text-gray-200 hover:border-gray-400"
+                  ? "border-accent bg-red-950/60 text-white shadow-md shadow-red-900/20"
+                  : "border-gray-600/80 bg-gray-900/70 text-gray-200 hover:border-gray-400 hover:bg-gray-800/80"
               }`}
             >
               {f.logo_path ? (
