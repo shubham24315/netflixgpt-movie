@@ -4,21 +4,23 @@ const gptSlice = createSlice({
   name: "gpt",
   initialState: {
     showGptSearch: false,
-    movieResults: null,
-    movieNames: null,
+    mergedMovies: null,
     providerFacets: null,
+    genreFacets: null,
     selectedProviderIds: [],
+    selectedGenreIds: [],
   },
   reducers: {
     toggleGptSearchView: (state) => {
       state.showGptSearch = !state.showGptSearch;
     },
     addGptMovieResults: (state, action) => {
-      const { movieNames, movieResults, providerFacets } = action.payload;
-      state.movieNames = movieNames;
-      state.movieResults = movieResults;
+      const { mergedMovies, providerFacets, genreFacets } = action.payload;
+      state.mergedMovies = mergedMovies;
       state.providerFacets = providerFacets ?? null;
+      state.genreFacets = genreFacets ?? null;
       state.selectedProviderIds = [];
+      state.selectedGenreIds = [];
     },
     toggleGptProviderFilter: (state, action) => {
       const id = action.payload;
@@ -32,6 +34,18 @@ const gptSlice = createSlice({
     clearGptProviderFilters: (state) => {
       state.selectedProviderIds = [];
     },
+    toggleGptGenreFilter: (state, action) => {
+      const id = action.payload;
+      const idx = state.selectedGenreIds.indexOf(id);
+      if (idx >= 0) {
+        state.selectedGenreIds.splice(idx, 1);
+      } else {
+        state.selectedGenreIds.push(id);
+      }
+    },
+    clearGptGenreFilters: (state) => {
+      state.selectedGenreIds = [];
+    },
   },
 });
 
@@ -40,5 +54,7 @@ export const {
   addGptMovieResults,
   toggleGptProviderFilter,
   clearGptProviderFilters,
+  toggleGptGenreFilter,
+  clearGptGenreFilters,
 } = gptSlice.actions;
 export default gptSlice.reducer;
