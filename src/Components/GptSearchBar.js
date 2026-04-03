@@ -3,9 +3,14 @@ import lang from "../utils/languageConstants";
 import { useSelector } from "react-redux";
 import { useRef } from "react";
 import openai from "../utils/openai";
-import { API_OPTIONS } from "../utils/constants";
+import { API_OPTIONS, TMDB_WATCH_REGION } from "../utils/constants";
 import { useDispatch } from "react-redux";
 import { addGptMovieResults } from "../utils/gptSlice";
+import {
+  collectProvidersForMovies,
+  enrichMovieLists,
+  buildProviderFacets,
+} from "../utils/tmdbWatchProviders";
 const GptSearchBar = () => {
   const dispatch = useDispatch();
   const langkey = useSelector((store) => store.config.lang);
@@ -35,14 +40,33 @@ const GptSearchBar = () => {
       return;
     }
     // console.log(gptResults?.choices?.[0].message?.content)
-    const gptMovies = gptResults?.choices?.[0].message?.content.split(",");
+    const gptMovies = gptResults?.choices?.[0].message?.content
+      .split(",")
+      .map((name) => name.trim())
+      .filter(Boolean);
 
-    //For each movie I will search TMDB API
     const promiseArray = gptMovies.map((movie) => searchMoiveTMDB(movie));
     const tmdbresults = await Promise.all(promiseArray);
-    // console.log(tmdbresults,"tmdbresults")
+
+    const uniqueIds = [
+      ...new Set(
+        tmdbresults.flatMap((row) =>
+          (row || []).map((m) => m?.id).filter((id) => id != null),
+        ),
+      ),
+    ];
+
+    const { providersByMovieId, providerMeta } =
+      await collectProvidersForMovies(uniqueIds, TMDB_WATCH_REGION);
+    const enriched = enrichMovieLists(tmdbresults, providersByMovieId);
+    const providerFacets = buildProviderFacets(enriched, providerMeta);
+
     dispatch(
-      addGptMovieResults({ movieNames: gptMovies, movieResults: tmdbresults }),
+      addGptMovieResults({
+        movieNames: gptMovies,
+        movieResults: enriched,
+        providerFacets,
+      }),
     );
   };
   return (
