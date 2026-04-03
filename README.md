@@ -36,11 +36,11 @@
 
 ## TMDB watch providers and provider filters
 
-After GPT suggests movie titles, each title is resolved via TMDB `search/movie`. Unique movie IDs from those results are enriched with **`GET /3/movie/{id}/watch/providers`**. Provider data for the configured region merges **flatrate** (subscription), **rent**, and **buy** into `provider_ids` on each movie. Facets (provider name, logo, count across unique movies) power the **Watch providers** chip row. With no chips selected, all results show; with one or more selected, each row filters to movies whose `provider_ids` intersect the selection (**OR** semantics). Movies with no providers in that region are hidden while filters are active.
+After GPT suggests movie titles, each title is resolved via TMDB `search/movie`. Results are merged into one deduplicated list. Unique movie IDs are enriched with **`GET /3/movie/{id}/watch/providers`**. Provider data for the configured region merges **flatrate** (subscription), **rent**, and **buy** into `provider_ids` on each movie. Provider and genre facets power **dropdown multi-selects** above the results grid. With no options selected, all merged movies show; with selections active, lists filter by **OR** semantics per facet type. Movies with no providers in that region are hidden while provider filters are active.
 
 **Configuration:** set `REACT_APP_TMDB_WATCH_REGION` (ISO country code, e.g. `US`, `IN`). Defaults to `US` if unset. Uses the same `REACT_APP_TMDB_KEY` / `API_OPTIONS` as other TMDB calls.
 
-**Main files:** [`src/utils/tmdbWatchProviders.js`](src/utils/tmdbWatchProviders.js), [`src/utils/gptSlice.js`](src/utils/gptSlice.js), [`src/Components/GptSearchBar.js`](src/Components/GptSearchBar.js), [`src/Components/ProviderTopFilters.js`](src/Components/ProviderTopFilters.js), [`src/Components/GptMovieSuggesions.js`](src/Components/GptMovieSuggesions.js).
+**Main files:** [`src/utils/tmdbWatchProviders.js`](src/utils/tmdbWatchProviders.js), [`src/utils/tmdbGenres.js`](src/utils/tmdbGenres.js), [`src/utils/gptSlice.js`](src/utils/gptSlice.js), [`src/Components/GptSearchBar.js`](src/Components/GptSearchBar.js), [`src/Components/GptFacetDropdowns.js`](src/Components/GptFacetDropdowns.js), [`src/Components/GptMovieSuggesions.js`](src/Components/GptMovieSuggesions.js).
 
 ### Sequence: search → providers → store → UI
 
@@ -49,19 +49,19 @@ sequenceDiagram
   participant Bar as GptSearchBar
   participant TMDB as TMDB_API
   participant Store as gptSlice
-  participant UI as ProviderTopFilters
+  participant UI as GptFacetDropdowns
   participant List as GptMovieSuggesions
 
   Bar->>TMDB: search/movie per GPT title
   TMDB-->>Bar: movieResults arrays
-  Bar->>Bar: unique movie ids
+  Bar->>Bar: unique movie ids, merge rows
   Bar->>TMDB: movie/id/watch/providers per id
   TMDB-->>Bar: providers by region
-  Bar->>Bar: attach providerIds to each movie, build facets
-  Bar->>Store: addGptMovieResults enriched plus facets
-  Store->>UI: providerFacets, selectedProviderIds
-  UI->>Store: toggleGptProviderFilter
-  Store->>List: filtered movieResults per row
+  Bar->>Bar: attach providerIds, build provider & genre facets
+  Bar->>Store: addGptMovieResults merged list plus facets
+  Store->>UI: facets, selectedProviderIds, selectedGenreIds
+  UI->>Store: toggle filters
+  Store->>List: filtered merged movies as grid
 ```
 
 ### Filter behavior (high level)
@@ -75,9 +75,9 @@ flowchart LR
     D --> E[Build provider facets]
   end
   subgraph ui [User filtering]
-    E --> F[Provider chips]
-    F --> G{Any chip selected?}
-    G -->|No| H[Show all movies in each row]
-    G -->|Yes| I[Show movies matching ANY selected provider]
+    E --> F[Provider & genre dropdowns]
+    F --> G{Any filter selected?}
+    G -->|No| H[Show all merged movies in grid]
+    G -->|Yes| I[Show movies matching facet selections]
   end
 ```

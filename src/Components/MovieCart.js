@@ -1,11 +1,16 @@
 import React from 'react'
 import { IMG_CDN_URL } from '../utils/constants'
 
-const MovieCart = ({ posterPath, title }) => {
+const MovieCart = ({ posterPath, title, variant = 'row' }) => {
   if (!posterPath) return null
 
+  const wrap =
+    variant === 'grid'
+      ? 'group w-full max-w-[220px] mx-auto'
+      : 'group w-36 shrink-0 snap-start sm:w-40 md:w-44'
+
   return (
-    <div className="group w-36 shrink-0 snap-start sm:w-40 md:w-44">
+    <div className={wrap}>
       <div className="overflow-hidden rounded-md shadow-card ring-1 ring-white/5 transition-all duration-300 ease-out-expo group-hover:z-10 group-hover:scale-[1.06] group-hover:shadow-card-hover group-hover:ring-white/20">
         <img
           src={IMG_CDN_URL + posterPath}
