@@ -16,15 +16,7 @@ const Browse = () => {
   useTrendingMovies();
   useUpcomingMovies();
   return (
-    <div>
-      {/* 
-        MainContainer
-          - videobackground
-          - videotitle
-        SecondaryContainer
-         - movie list *n
-         - cards*n
-      */}
+    <div className="min-h-screen bg-black">
         <Header/>
         {
           showGptSearch ? <GptSearch/> :
@@ -33,8 +25,6 @@ const Browse = () => {
         <SecondaryContainer/>
           </>
         }
-        
-
     </div>
   )
 }

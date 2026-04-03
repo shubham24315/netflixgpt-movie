@@ -1,16 +1,20 @@
-import React from "react";
+import React, { useRef, useState } from "react";
 import lang from "../utils/languageConstants";
 import { useSelector } from "react-redux";
-import { useRef } from "react";
 import openai from "../utils/openai";
-import { API_OPTIONS } from "../utils/constants";
+import { API_OPTIONS, TMDB_WATCH_REGION } from "../utils/constants";
 import { useDispatch } from "react-redux";
 import { addGptMovieResults } from "../utils/gptSlice";
+import {
+  collectProvidersForMovies,
+  enrichMovieLists,
+  buildProviderFacets,
+} from "../utils/tmdbWatchProviders";
 const GptSearchBar = () => {
   const dispatch = useDispatch();
   const langkey = useSelector((store) => store.config.lang);
   const searchText = useRef(null);
-  const showGptSearch = useSelector((store) => store.gpt.showGptSearch);
+  const [isSearching, setIsSearching] = useState(false);
   //movie search in tmdb
   const searchMoiveTMDB = async (movieName) => {
     const data = await fetch(
@@ -22,7 +26,9 @@ const GptSearchBar = () => {
     return json.results;
   };
   const handleGptSearchClick = async () => {
-    // console.log(searchText.current.value);
+    if (!searchText.current?.value?.trim() || isSearching) return;
+    setIsSearching(true);
+    try {
     const gptQuery =
       "Act as a Movie Recommendation system and suggest some movies for the query : " +
       searchText.current.value +
@@ -35,35 +41,60 @@ const GptSearchBar = () => {
       return;
     }
     // console.log(gptResults?.choices?.[0].message?.content)
-    const gptMovies = gptResults?.choices?.[0].message?.content.split(",");
+    const gptMovies = gptResults?.choices?.[0].message?.content
+      .split(",")
+      .map((name) => name.trim())
+      .filter(Boolean);
 
-    //For each movie I will search TMDB API
     const promiseArray = gptMovies.map((movie) => searchMoiveTMDB(movie));
     const tmdbresults = await Promise.all(promiseArray);
-    // console.log(tmdbresults,"tmdbresults")
+
+    const uniqueIds = [
+      ...new Set(
+        tmdbresults.flatMap((row) =>
+          (row || []).map((m) => m?.id).filter((id) => id != null),
+        ),
+      ),
+    ];
+
+    const { providersByMovieId, providerMeta } =
+      await collectProvidersForMovies(uniqueIds, TMDB_WATCH_REGION);
+    const enriched = enrichMovieLists(tmdbresults, providersByMovieId);
+    const providerFacets = buildProviderFacets(enriched, providerMeta);
+
     dispatch(
-      addGptMovieResults({ movieNames: gptMovies, movieResults: tmdbresults }),
+      addGptMovieResults({
+        movieNames: gptMovies,
+        movieResults: enriched,
+        providerFacets,
+      }),
     );
+    } finally {
+      setIsSearching(false);
+    }
   };
   return (
-    <div className="pt-[10%] flex justify-center">
+    <div className="flex justify-center px-4 pb-4 pt-2 sm:px-6">
       <form
-        form
-        className="w-1/2 bg-black grid grid-cols-12"
-        onSubmit={(e) => e.preventDefault()}
+        className="flex w-full max-w-2xl flex-col gap-2 rounded-xl border border-white/10 bg-black/65 p-1.5 shadow-lg backdrop-blur-xl sm:flex-row sm:items-stretch sm:gap-1 sm:rounded-lg sm:p-1"
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleGptSearchClick();
+        }}
       >
         <input
           ref={searchText}
-          type="text"
-          className="p-4 m-4 col-span-9"
+          type="search"
+          disabled={isSearching}
+          className="h-11 w-full flex-1 rounded-md border border-white/10 bg-white/5 px-3 text-sm text-white placeholder:text-neutral-500 transition-colors focus:border-violet-400/50 focus:outline-none focus:ring-2 focus:ring-violet-500/25 disabled:opacity-60 sm:h-10 sm:border-transparent sm:bg-transparent sm:px-3.5 sm:focus:ring-1"
           placeholder={lang[langkey].gptSearchPlaceholder}
         />
-        {/* to make it dynamic you to give lang[langkey] */}
         <button
-          className="py-2 px-4 bg-red-400 text-white col-span-3 m-4"
-          onClick={handleGptSearchClick}
+          type="submit"
+          disabled={isSearching}
+          className="h-11 shrink-0 rounded-md bg-violet-600 px-5 text-sm font-semibold text-white shadow-md shadow-violet-900/25 transition-all duration-200 ease-out-expo hover:bg-violet-500 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-60 sm:h-10 sm:px-4"
         >
-          {lang[langkey].search}
+          {isSearching ? "…" : lang[langkey].search}
         </button>
       </form>
     </div>
