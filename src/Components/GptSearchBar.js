@@ -74,9 +74,9 @@ const GptSearchBar = () => {
     }
   };
   return (
-    <div className="flex justify-center px-4 pb-8 pt-[10%] sm:pt-[8%]">
+    <div className="flex justify-center px-4 pb-4 pt-2 sm:px-6">
       <form
-        className="grid w-full max-w-3xl grid-cols-1 gap-3 rounded-2xl border border-white/10 bg-black/70 p-3 shadow-2xl backdrop-blur-xl sm:grid-cols-12 sm:gap-0 sm:p-2"
+        className="flex w-full max-w-2xl flex-col gap-2 rounded-xl border border-white/10 bg-black/65 p-1.5 shadow-lg backdrop-blur-xl sm:flex-row sm:items-stretch sm:gap-1 sm:rounded-lg sm:p-1"
         onSubmit={(e) => {
           e.preventDefault();
           handleGptSearchClick();
@@ -86,13 +86,13 @@ const GptSearchBar = () => {
           ref={searchText}
           type="search"
           disabled={isSearching}
-          className="col-span-1 rounded-lg border border-white/10 bg-white/5 px-4 py-3.5 text-white placeholder:text-neutral-500 transition-colors focus:border-violet-400/50 focus:outline-none focus:ring-2 focus:ring-violet-500/30 disabled:opacity-60 sm:col-span-9 sm:mx-2 sm:my-2 sm:border-transparent sm:bg-transparent sm:focus:border-white/20"
+          className="h-11 w-full flex-1 rounded-md border border-white/10 bg-white/5 px-3 text-sm text-white placeholder:text-neutral-500 transition-colors focus:border-violet-400/50 focus:outline-none focus:ring-2 focus:ring-violet-500/25 disabled:opacity-60 sm:h-10 sm:border-transparent sm:bg-transparent sm:px-3.5 sm:focus:ring-1"
           placeholder={lang[langkey].gptSearchPlaceholder}
         />
         <button
           type="submit"
           disabled={isSearching}
-          className="rounded-lg bg-violet-600 px-4 py-3.5 text-sm font-semibold text-white shadow-lg shadow-violet-900/35 transition-all duration-200 ease-out-expo hover:bg-violet-500 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-60 sm:col-span-3 sm:mx-2 sm:my-2"
+          className="h-11 shrink-0 rounded-md bg-violet-600 px-5 text-sm font-semibold text-white shadow-md shadow-violet-900/25 transition-all duration-200 ease-out-expo hover:bg-violet-500 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-60 sm:h-10 sm:px-4"
         >
           {isSearching ? "…" : lang[langkey].search}
         </button>

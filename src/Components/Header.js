@@ -54,7 +54,7 @@ const Header = () => {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 flex flex-wrap items-center justify-between gap-4 px-4 py-3 sm:px-8 sm:py-4 bg-gradient-to-b from-black/95 via-black/70 to-transparent backdrop-blur-md transition-[background,backdrop-filter] duration-300">
         <img
-        className="h-7 w-auto sm:h-8 object-contain select-none"
+        className="h-9 w-auto object-contain select-none sm:h-10 md:h-11 md:min-w-[9.5rem]"
         src={LOGO} alt="Netflix" />
        {user && (
         <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
