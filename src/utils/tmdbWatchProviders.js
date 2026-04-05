@@ -54,16 +54,27 @@ export function enrichMovieLists(movieResults, providersByMovieId) {
   );
 }
 
-export function buildProviderFacets(enrichedMovieResults, providerMeta = {}) {
-  const contribution = new Map();
-
-  for (const row of enrichedMovieResults || []) {
+/** Dedupe by TMDB id; preserves first-seen order (GPT / search order). */
+export function mergeEnrichedMovieRowsToUniqueMovies(enrichedRows) {
+  const byId = new Map();
+  for (const row of enrichedRows || []) {
     for (const movie of row || []) {
-      if (!movie?.id) continue;
-      for (const pid of movie.provider_ids || []) {
-        if (!contribution.has(pid)) contribution.set(pid, new Set());
-        contribution.get(pid).add(movie.id);
+      if (movie?.id == null) continue;
+      if (!byId.has(movie.id)) {
+        byId.set(movie.id, movie);
       }
+    }
+  }
+  return Array.from(byId.values());
+}
+
+export function buildProviderFacetsFromMovies(movies, providerMeta = {}) {
+  const contribution = new Map();
+  for (const movie of movies || []) {
+    if (!movie?.id) continue;
+    for (const pid of movie.provider_ids || []) {
+      if (!contribution.has(pid)) contribution.set(pid, new Set());
+      contribution.get(pid).add(movie.id);
     }
   }
 
@@ -83,6 +94,11 @@ export function buildProviderFacets(enrichedMovieResults, providerMeta = {}) {
       b.count - a.count || a.provider_name.localeCompare(b.provider_name),
   );
   return facets;
+}
+
+export function buildProviderFacets(enrichedMovieResults, providerMeta = {}) {
+  const merged = mergeEnrichedMovieRowsToUniqueMovies(enrichedMovieResults);
+  return buildProviderFacetsFromMovies(merged, providerMeta);
 }
 
 export async function collectProvidersForMovies(movieIds, region) {

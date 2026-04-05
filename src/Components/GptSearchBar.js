@@ -8,8 +8,10 @@ import { addGptMovieResults } from "../utils/gptSlice";
 import {
   collectProvidersForMovies,
   enrichMovieLists,
-  buildProviderFacets,
+  buildProviderFacetsFromMovies,
+  mergeEnrichedMovieRowsToUniqueMovies,
 } from "../utils/tmdbWatchProviders";
+import { buildGenreFacets } from "../utils/tmdbGenres";
 const GptSearchBar = () => {
   const dispatch = useDispatch();
   const langkey = useSelector((store) => store.config.lang);
@@ -60,13 +62,15 @@ const GptSearchBar = () => {
     const { providersByMovieId, providerMeta } =
       await collectProvidersForMovies(uniqueIds, TMDB_WATCH_REGION);
     const enriched = enrichMovieLists(tmdbresults, providersByMovieId);
-    const providerFacets = buildProviderFacets(enriched, providerMeta);
+    const mergedMovies = mergeEnrichedMovieRowsToUniqueMovies(enriched);
+    const providerFacets = buildProviderFacetsFromMovies(mergedMovies, providerMeta);
+    const genreFacets = buildGenreFacets(mergedMovies);
 
     dispatch(
       addGptMovieResults({
-        movieNames: gptMovies,
-        movieResults: enriched,
+        mergedMovies,
         providerFacets,
+        genreFacets,
       }),
     );
     } finally {
